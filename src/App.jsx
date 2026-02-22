@@ -140,13 +140,14 @@ function App() {
 
     setIsSearching(true);
     try {
-      let query = supabase
-        .from('alunos')
-        .select('*')
-        .ilike('nome_completo', `%${searchTerm}%`);
+    let query = supabase
+      .from('alunos')
+      .select('*')
+      .ilike('nome_completo', `%${searchTerm}%`)
+      .in('serie', SERIES_DISPONIVEIS);  // ← usa a lista que você já tem
 
-      // BLOQUEAR séries do 6º ao 9º Ano
-      query = query.not('serie', 'in', '("6º Ano","7º Ano","8º Ano","9º Ano")');
+     // Troque o .not() por .in() com as séries permitidas:
+    query = query.in('serie', ['Grupo IV', 'Grupo V', 'Maternal(3)', 'Maternalzinho(2)', '1º Ano', '2º Ano', '3º Ano', '4º Ano', '5º Ano']);
       
       // Aplicar filtro de série se selecionado
       if (selectedSerie) {
@@ -1077,6 +1078,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
