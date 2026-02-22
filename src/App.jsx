@@ -480,8 +480,8 @@ function App() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={interiorImage1} alt="Evento escolar" className="rounded-lg shadow-lg h-48 w-full object-cover" />          
-              {/* <img src={interiorImage2} alt="Atividade cultural" className="rounded-lg shadow-lg h-48 w-full object-cover" /> */}
+              <img src={interiorImage1} alt="Evento escolar" className="rounded-lg shadow-lg h-48 w-full object-cover" />         
+              <img src={interiorImage2} alt="Atividade cultural" className="rounded-lg shadow-lg h-48 w-full object-cover" />    
               <img src={jardimImage} alt="Passeio escolar" className="rounded-lg shadow-lg col-span-2 h-64 w-full object-cover" />
             </div>
           </div>
@@ -1078,6 +1078,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
