@@ -39,7 +39,7 @@ import {
 import interiorImage1 from './assets/happy1.JPG';
 import interiorImage2 from './assets/happy2.JPG';
 import jardimImage from './assets/happy3.JPG';
-import videoEvento from './assets/video-evento.mp4';
+//import videoEvento from './assets/video-evento.mp4';
 
 function App() {
   // ⚙️ CONFIGURAÇÃO
@@ -481,14 +481,7 @@ function App() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={interiorImage1} alt="Evento escolar" className="rounded-lg shadow-lg h-48 w-full object-cover" />
-              <video 
-                src={videoEvento}
-                className="rounded-lg shadow-lg h-48 w-full object-cover"
-                controls
-                muted
-                poster={interiorImage2}
-              />            
+              <img src={interiorImage1} alt="Evento escolar" className="rounded-lg shadow-lg h-48 w-full object-cover" />          
                {/* <img src={interiorImage2} alt="Atividade cultural" className="rounded-lg shadow-lg h-48 w-full object-cover" /> */}
               <img src={jardimImage} alt="Passeio escolar" className="rounded-lg shadow-lg col-span-2 h-64 w-full object-cover" />
             </div>
@@ -1086,6 +1079,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
