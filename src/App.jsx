@@ -42,8 +42,27 @@ import jardimImage from './assets/happy3.JPG';
 
 function App() {
   // ⚙️ CONFIGURAÇÃO - Séries permitidas (o turno está fixo como "Manhã")
-  const TURNOS_DISPONIVEIS = ['Manhã'];
+  const TURNOS_DISPONIVEIS = ['Manhã','tarde'];
   const SERIES_DISPONIVEIS = ['Grupo IV','Grupo V', 'Maternal(3)', 'Maternalzinho(2)', '1º Ano', '2º Ano', '3º Ano', '4º Ano', '5º Ano','6º Ano', '7º Ano', '8º Ano' ,'9º Ano'];
+
+  // ============================================
+  // TAXAS DE ANTECIPAÇÃO (NOVAS)
+  // ============================================
+  const TAXA_ANTECIPACAO_VISTA = 0.0115;    // 1,15% - cartão à vista
+  const TAXA_ANTECIPACAO_PARCELADO = 0.016; // 1,6% ao mês - parcelado
+
+  const calcularTaxaAntecipacao = (valorBase, numParcelas) => {
+    if (numParcelas === 1) {
+      // À vista: 1 mês de antecipação a 1,15%
+      return valorBase * TAXA_ANTECIPACAO_VISTA;
+    } else {
+      // Parcelado: parcela 1 = 1 mês, parcela 2 = 2 meses, etc.
+      // Soma dos meses: ex 3x → 1+2+3 = 6
+      const somaMeses = (numParcelas * (numParcelas + 1)) / 2;
+      const valorParcela = valorBase / numParcelas;
+      return valorParcela * TAXA_ANTECIPACAO_PARCELADO * somaMeses;
+    }
+  };
 
   // Estados para o formulário
   const [showForm, setShowForm] = useState(false);
@@ -143,11 +162,6 @@ function App() {
         query = query.eq('serie', selectedSerie);
       }
 
-          // Aplicar filtro de série se selecionado
-    if (selectedSerie) {
-      query = query.eq('serie', selectedSerie);
-    }
-
       const { data, error } = await query
         .order('nome_completo')
         .limit(10);
@@ -227,6 +241,9 @@ function App() {
     }
   };
 
+  // ============================================
+  // CÁLCULO DE PREÇO ATUALIZADO (COM ANTECIPAÇÃO)
+  // ============================================
   const calculatePrice = () => {
     const PRECO_BASE = 30.0;
     let valorTotal = PRECO_BASE * ticketQuantity;
@@ -236,15 +253,23 @@ function App() {
       const taxaFixa = 0.49;
       const parcelas = parseInt(formData.installments) || 1;
       
+      // Taxa do cartão por faixa de parcelas
       if (parcelas === 1) {
-        taxaPercentual = 0.0299;
-      } else if (parcelas >= 2 && parcelas <= 4) {
-        taxaPercentual = 0.0349;
-      } else {
-        taxaPercentual = 0.0399;
+        taxaPercentual = 0.0299;           // 2,99% à vista
+      } else if (parcelas >= 2 && parcelas <= 6) {
+        taxaPercentual = 0.0349;           // 3,49% de 2 a 6 parcelas
+      } else if (parcelas >= 7 && parcelas <= 12) {
+        taxaPercentual = 0.0399;           // 3,99% de 7 a 12 parcelas
       }
       
-      valorTotal = valorTotal + (valorTotal * taxaPercentual) + taxaFixa;
+      // Taxa do cartão
+      const taxaCartao = valorTotal * taxaPercentual;
+      
+      // Taxa de antecipação (NOVA)
+      const taxaAntecipacao = calcularTaxaAntecipacao(valorTotal, parcelas);
+      
+      // Valor total = base + taxa cartão + taxa fixa + taxa antecipação
+      valorTotal = valorTotal + taxaCartao + taxaFixa + taxaAntecipacao;
     }
     
     const valorParcela = valorTotal / (parseInt(formData.installments) || 1);
@@ -348,7 +373,7 @@ function App() {
           ticketQuantity: ticketQuantity, 
           amount: valorTotal,
           timestamp: new Date().toISOString(),
-          event: 'Amadeus-autonatalmatutino'
+          event: 'Amadeus-teatro'
         })
       });
 
@@ -684,82 +709,6 @@ function App() {
                       <Search className="mr-2 h-5 w-5" />
                       Buscar Aluno
                     </h3>
-
-                    {/* CAIXINHA DE FILTROS COMENTADA - NÃO APARECE NA TELA
-                    <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-medium flex items-center">
-                          <Filter className="h-4 w-4 mr-2" />
-                          Filtrar busca por:
-                        </Label>
-                        {(selectedTurno || selectedSerie) && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearFilters}
-                            className="text-xs text-blue-600 hover:text-blue-800"
-                          >
-                            <X className="h-3 w-3 mr-1" />
-                            Limpar filtros
-                          </Button>
-                        )}
-                      </div>
-                    
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <Label htmlFor="filterTurno" className="text-xs">Turno</Label>
-                          <select
-                            id="filterTurno"
-                            value={selectedTurno}
-                            onChange={(e) => {
-                              setSelectedTurno(e.target.value);
-                              setTimeout(handleFilterChange, 100);
-                            }}
-                            className="w-full h-9 px-3 rounded-md border border-input bg-white text-sm"
-                          >
-                            <option value="">Todos os Turnos</option>
-                            {TURNOS_DISPONIVEIS.map(turno => (
-                              <option key={turno} value={turno}>{turno}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="filterSerie" className="text-xs">Série</Label>
-                          <select
-                            id="filterSerie"
-                            value={selectedSerie}
-                            onChange={(e) => {
-                              setSelectedSerie(e.target.value);
-                              setTimeout(handleFilterChange, 100);
-                            }}
-                            className="w-full h-9 px-3 rounded-md border border-input bg-white text-sm"
-                          >
-                            <option value="">Todas as Séries</option>
-                            {SERIES_DISPONIVEIS.map(serie => (
-                              <option key={serie} value={serie}>{serie}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      {(selectedTurno || selectedSerie) && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {selectedTurno && (
-                            <Badge variant="secondary" className="text-xs">
-                              Turno: {selectedTurno}
-                            </Badge>
-                          )}
-                          {selectedSerie && (
-                            <Badge variant="secondary" className="text-xs">
-                              Série: {selectedSerie}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    FIM DA CAIXINHA DE FILTROS */}
                     
                     <div className="space-y-4">
                       <div className="relative">
