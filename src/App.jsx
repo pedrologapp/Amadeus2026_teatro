@@ -145,6 +145,9 @@ function App() {
         .select('*')
         .ilike('nome_completo', `%${searchTerm}%`);
 
+      // BLOQUEAR séries do 6º ao 9º Ano
+      query = query.not('serie', 'in', '("6º Ano","7º Ano","8º Ano","9º Ano")');
+      
       // Aplicar filtro de série se selecionado
       if (selectedSerie) {
         query = query.eq('serie', selectedSerie);
@@ -1074,6 +1077,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
