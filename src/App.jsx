@@ -41,23 +41,19 @@ import interiorImage2 from './assets/happy2.JPG';
 import jardimImage from './assets/happy3.JPG';
 
 function App() {
-  // ⚙️ CONFIGURAÇÃO - Séries permitidas (o turno está fixo como "Manhã")
-  const TURNOS_DISPONIVEIS = ['Manhã','tarde'];
+  // ⚙️ CONFIGURAÇÃO
   const SERIES_DISPONIVEIS = ['Grupo IV','Grupo V', 'Maternal(3)', 'Maternalzinho(2)', '1º Ano', '2º Ano', '3º Ano', '4º Ano', '5º Ano','6º Ano', '7º Ano', '8º Ano' ,'9º Ano'];
 
   // ============================================
-  // TAXAS DE ANTECIPAÇÃO (NOVAS)
+  // TAXAS DE ANTECIPAÇÃO
   // ============================================
   const TAXA_ANTECIPACAO_VISTA = 0.0115;    // 1,15% - cartão à vista
   const TAXA_ANTECIPACAO_PARCELADO = 0.016; // 1,6% ao mês - parcelado
 
   const calcularTaxaAntecipacao = (valorBase, numParcelas) => {
     if (numParcelas === 1) {
-      // À vista: 1 mês de antecipação a 1,15%
       return valorBase * TAXA_ANTECIPACAO_VISTA;
     } else {
-      // Parcelado: parcela 1 = 1 mês, parcela 2 = 2 meses, etc.
-      // Soma dos meses: ex 3x → 1+2+3 = 6
       const somaMeses = (numParcelas * (numParcelas + 1)) / 2;
       const valorParcela = valorBase / numParcelas;
       return valorParcela * TAXA_ANTECIPACAO_PARCELADO * somaMeses;
@@ -91,12 +87,8 @@ function App() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  // FILTRO FIXO: Turno "Manhã" (não aparece na tela, mas funciona automaticamente)
-  const [selectedTurno, setSelectedTurno] = useState('Manhã'); // ← FIXO EM "MANHÃ"
-  const [selectedSerie, setSelectedSerie] = useState(''); // ← Vazio = todas as séries
-
-  // Estado para quantidade de ingressos
-  const [ticketQuantity, setTicketQuantity] = useState(1);
+  // SEM FILTRO DE TURNO - Todos os alunos (matutino e vespertino)
+  const [selectedSerie, setSelectedSerie] = useState('');
 
   // Função para validar CPF
   const validarCPF = (cpf) => {
@@ -137,7 +129,7 @@ function App() {
     }, 100);
   };
 
-  // Função para buscar alunos no Supabase COM FILTRO AUTOMÁTICO DE TURNO
+  // Função para buscar alunos no Supabase - SEM FILTRO DE TURNO (todos participam)
   const searchStudents = async (searchTerm) => {
     if (searchTerm.length < 2) {
       setStudentsList([]);
@@ -151,11 +143,6 @@ function App() {
         .from('alunos')
         .select('*')
         .ilike('nome_completo', `%${searchTerm}%`);
-
-      // FILTRO FIXO: sempre filtra por turno "Manhã"
-      if (selectedTurno) {
-        query = query.eq('turno', selectedTurno);
-      }
 
       // Aplicar filtro de série se selecionado
       if (selectedSerie) {
@@ -211,13 +198,6 @@ function App() {
     }
   };
 
-  // Refazer busca quando filtros mudarem
-  const handleFilterChange = () => {
-    if (studentSearch.length >= 2) {
-      searchStudents(studentSearch);
-    }
-  };
-
   // Limpar seleção de aluno
   const clearStudentSelection = () => {
     setSelectedStudent(null);
@@ -232,40 +212,29 @@ function App() {
     setStudentsList([]);
   };
 
-  // Limpar filtros
-  const clearFilters = () => {
-    setSelectedTurno('Manhã'); // Mantém "Manhã" fixo
-    setSelectedSerie('');
-    if (studentSearch.length >= 2) {
-      searchStudents(studentSearch);
-    }
-  };
-
   // ============================================
-  // CÁLCULO DE PREÇO ATUALIZADO (COM ANTECIPAÇÃO)
+  // CÁLCULO DE PREÇO - R$ 80,00 POR ALUNO
+  // Até 3x no cartão com juros
   // ============================================
   const calculatePrice = () => {
-    const PRECO_BASE = 30.0;
-    let valorTotal = PRECO_BASE * ticketQuantity;
+    const PRECO_BASE = 80.0;
+    let valorTotal = PRECO_BASE;
     
     if (formData.paymentMethod === 'credit') {
       let taxaPercentual = 0;
       const taxaFixa = 0.49;
       const parcelas = parseInt(formData.installments) || 1;
       
-      // Taxa do cartão por faixa de parcelas
       if (parcelas === 1) {
         taxaPercentual = 0.0299;           // 2,99% à vista
-      } else if (parcelas >= 2 && parcelas <= 6) {
-        taxaPercentual = 0.0349;           // 3,49% de 2 a 6 parcelas
-      } else if (parcelas >= 7 && parcelas <= 12) {
-        taxaPercentual = 0.0399;           // 3,99% de 7 a 12 parcelas
+      } else if (parcelas >= 2 && parcelas <= 3) {
+        taxaPercentual = 0.0349;           // 3,49% de 2 a 3 parcelas
       }
       
       // Taxa do cartão
       const taxaCartao = valorTotal * taxaPercentual;
       
-      // Taxa de antecipação (NOVA)
+      // Taxa de antecipação
       const taxaAntecipacao = calcularTaxaAntecipacao(valorTotal, parcelas);
       
       // Valor total = base + taxa cartão + taxa fixa + taxa antecipação
@@ -274,18 +243,6 @@ function App() {
     
     const valorParcela = valorTotal / (parseInt(formData.installments) || 1);
     return { valorTotal, valorParcela };
-  };
-
-  const increaseTickets = () => {
-    if (ticketQuantity < 20) {
-      setTicketQuantity(prev => prev + 1);
-    }
-  };
-
-  const decreaseTickets = () => {
-    if (ticketQuantity > 1) {
-      setTicketQuantity(prev => prev - 1);
-    }
   };
 
   const { valorTotal, valorParcela } = calculatePrice();
@@ -370,10 +327,10 @@ function App() {
           phone: formData.phone,
           paymentMethod: formData.paymentMethod,
           installments: formData.installments,
-          ticketQuantity: ticketQuantity, 
+          ticketQuantity: 1, 
           amount: valorTotal,
           timestamp: new Date().toISOString(),
-          event: 'Amadeus-teatro'
+          event: 'Amadeus-sitiodopicapau'
         })
       });
 
@@ -441,10 +398,9 @@ function App() {
             <h1 className="text-xl font-bold text-blue-900">Escola Amadeus</h1>
             <div className="hidden md:flex space-x-6">
               <button onClick={() => scrollToSection('sobre')} className="text-sm hover:text-primary transition-colors">Sobre</button>
-              <button onClick={() => scrollToSection('Programação do Evento')} className="text-sm hover:text-primary transition-colors">Programação do Evento</button>
+              <button onClick={() => scrollToSection('itinerario')} className="text-sm hover:text-primary transition-colors">Informações</button>
               <button onClick={() => scrollToSection('custos')} className="text-sm hover:text-primary transition-colors">Custos</button>
-              <button onClick={() => scrollToSection('Observação')} className="text-sm hover:text-primary transition-colors">Observação</button>
-              <button onClick={() => scrollToSection('orientacoes')} className="text-sm hover:text-primary transition-colors">Orientações</button>
+              <button onClick={() => scrollToSection('documentacao')} className="text-sm hover:text-primary transition-colors">Importante</button>
               <button onClick={() => scrollToSection('contato')} className="text-sm hover:text-primary transition-colors">Contato</button>
             </div>
           </div>
@@ -454,10 +410,10 @@ function App() {
       <section className="hero-section min-h-screen flex items-center justify-center text-white relative">
         <div className="text-center z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-            Auto de Natal
+            O Sítio do Picapau Amarelo
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            ESTE COMUNICADO É SOMENTE PARA OS ALUNOS DO TURNO MATUTINO.
+            Espetáculo Teatral no Teatro Alberto Maranhão
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -472,11 +428,11 @@ function App() {
           <div className="mt-12 flex justify-center items-center space-x-8 text-sm">
             <div className="flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
-              6 de Dezembro de 2025 - Às 14:00.
+              17 de Março de 2026 (Terça-feira)
             </div>
             <div className="flex items-center">
               <MapPin className="h-5 w-5 mr-2" />
-              Teatro Poti Cavalcanti - São Gonçalo do Amarante
+              Teatro Alberto Maranhão
             </div>
           </div>
         </div>
@@ -487,11 +443,12 @@ function App() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4 gradient-text">Sobre o Evento</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            O Auto de Natal é uma apresentação teatral que conta a história do nascimento de Jesus 
-            de forma lúdica e emocionante. É uma tradição que mistura teatro, música e a magia do 
-            Natal, onde as crianças dão vida aos personagens dessa história tão especial. Este ano, 
-            nossos alunos prepararam um espetáculo lindo no Teatro Poti Cavalcanti para celebrar o 
-            encerramento do ano letivo. 
+            A Companhia Encantada de Teatro, em parceria com o projeto "A Escola Vai ao Teatro", 
+            apresentará o clássico musical "O Sítio do Picapau Amarelo" no Teatro Alberto Maranhão. 
+            O Sítio do Picapau Amarelo foi criado por Monteiro Lobato com base no folclore brasileiro, 
+            na cultura popular e na literatura infantil universal, reunindo personagens do imaginário 
+            nacional (como o Saci e a Cuca) e figuras de contos clássicos, integrados a um contexto 
+            rural brasileiro.
             </p>
           </div>
 
@@ -501,26 +458,26 @@ function App() {
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                  <p>Espaço com segurança e comodidade</p>
+                  <p>Espetáculo musical clássico da literatura brasileira</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                  <p>Espaço cultural no centro de São Gonçalo do Amarante</p>
+                  <p>Teatro Alberto Maranhão — um dos mais tradicionais da região</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                  <p>Fechando o ano letivo com arte e emoção</p>
+                  <p>Transporte de ônibus incluso (ida e volta)</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                  <p>Espaço preparado para receber as famílias dos apresentadores</p>
+                  <p>Pipoca inclusa para os alunos</p>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={interiorImage1} alt="Interior do Instituto" className="rounded-lg shadow-lg h-48 w-full object-cover" />
-              <img src={interiorImage2} alt="Coleções do Instituto" className="rounded-lg shadow-lg h-48 w-full object-cover" />
-              <img src={jardimImage} alt="Jardins do Instituto" className="rounded-lg shadow-lg col-span-2 h-64 w-full object-cover" />
+              <img src={interiorImage1} alt="Evento escolar" className="rounded-lg shadow-lg h-48 w-full object-cover" />
+              <img src={interiorImage2} alt="Atividade cultural" className="rounded-lg shadow-lg h-48 w-full object-cover" />
+              <img src={jardimImage} alt="Passeio escolar" className="rounded-lg shadow-lg col-span-2 h-64 w-full object-cover" />
             </div>
           </div>
         </div>
@@ -529,9 +486,9 @@ function App() {
       <section id="itinerario" className="section-padding bg-muted/30">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Sobre o evento</h2>
+            <h2 className="text-4xl font-bold mb-4">Informações do Evento</h2>
             <p className="text-lg text-muted-foreground">
-              Confira as informações do nosso evento
+              Confira todos os detalhes do passeio
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -541,14 +498,14 @@ function App() {
                   <Clock className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle>Data e Horário</CardTitle>
-                <CardDescription>Horário</CardDescription>
+                <CardDescription>17 de Março de 2026</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-center">
-                  Entrada: 13:30
+                  Chegada na escola: 13:00
                 </p>
-                <p className="text-sm text-center">
-                  Início das apresentações: 14:00
+                <p className="text-sm text-center font-semibold text-red-600 mt-2">
+                  Neste dia NÃO HAVERÁ AULA
                 </p>
               </CardContent>
             </Card>
@@ -561,7 +518,36 @@ function App() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-center">
-                  Teatro Poti Cavalcanti – Rua Alexandre Cavalcanti, s/n – Centro – São Gonçalo do Amarante/RN
+                  Teatro Alberto Maranhão
+                </p>
+                <p className="text-xs text-center text-muted-foreground mt-1">
+                  Classificação: Livre
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="card-hover">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-3 bg-green-100 rounded-full w-fit">
+                  <Bus className="h-8 w-8 text-green-600" />
+                </div>
+                <CardTitle>Transporte</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-center">
+                  Ônibus incluso na taxa (ida e volta)
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="card-hover">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-3 bg-orange-100 rounded-full w-fit">
+                  <Users className="h-8 w-8 text-orange-600" />
+                </div>
+                <CardTitle>Alunos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-center">
+                  Todos os turnos (matutino e vespertino)
                 </p>
               </CardContent>
             </Card>
@@ -581,7 +567,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                  É necessário a confirmação do(a) aluno(a) para a participação no Auto de Natal. 
+                    Neste dia (17/03) <strong>NÃO HAVERÁ AULA</strong>. Todos os alunos (matutino e vespertino) deverão estar na escola às 13 horas.
                   </p>
                 </div>
               </div>
@@ -589,7 +575,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                    Só irá participar dos ensaios  o(a) aluno(a) que o responsável confirmar sua presença.
+                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>.
                   </p>
                 </div>
               </div>
@@ -597,15 +583,23 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                   O aluno que irá APRESENTAR não paga, no entanto para CADA responsável, que tiver interesse de assistir, O INGRESSO será de R$ 30,00. 
+                    O aluno deverá trazer <strong>GARRAFINHA COM ÁGUA</strong> e o <strong>LANCHE</strong>.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <p className="text-sm">
+                    A taxa inclui: <strong>entrada no teatro, transporte (ônibus) e pipoca</strong>.
                   </p>
                 </div>
               </div>    
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
                 <div>
-                  <p className="text-sm">
-                   A confirmação do aluno deve ser feita até 11 de novembro de 2025, diretamente com a professora. 
+                  <p className="text-sm text-red-700 font-semibold">
+                    Pagamento obrigatório até 12/03/2026. Após essa data não será possível estender o prazo.
                   </p>
                 </div>
               </div>  
@@ -617,16 +611,16 @@ function App() {
       <section id="custos" className="section-padding bg-white">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Inscrição e Taxa</h2>
+            <h2 className="text-4xl font-bold mb-4">Inscrição e Pagamento</h2>
             <p className="text-lg text-muted-foreground">
-              O aluno que irá APRESENTAR não paga, no entanto para CADA responsável, que tiver interesse de assistir, O INGRESSO será de R$ 30,00. 
+              Taxa por aluno — inclui entrada, ônibus e pipoca
             </p>
           </div>
 
           <Card className="mb-8">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl text-primary">R$ 30,00</CardTitle>
-              <CardDescription>por RESPONSÁVEL</CardDescription>
+              <CardTitle className="text-3xl text-primary">R$ 80,00</CardTitle>
+              <CardDescription>por ALUNO</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
@@ -635,11 +629,15 @@ function App() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-accent mr-2" />
-                      Bombeiros, decoração, som e iluminação.
+                      Entrada no Teatro Alberto Maranhão
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-accent mr-2" />
-                      Entrada no teatro.
+                      Transporte de ônibus (ida e volta)
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-4 w-4 text-accent mr-2" />
+                      Pipoca
                     </li>
                   </ul>
                 </div>
@@ -648,11 +646,15 @@ function App() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
-                      Pagamento obrigatório até 03 de Dezembro de 2025;
+                      Pagamento obrigatório até 12/03/2026
                     </li>
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
-                      O valor pago não poderá ser reembolsado. 
+                      Após essa data, não será possível estender o prazo
+                    </li>
+                    <li className="flex items-start">
+                      <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
+                      Parcelamento em até 3x no cartão (com juros)
                     </li>
                   </ul>
                 </div>
@@ -688,7 +690,7 @@ function App() {
             </CardContent>
           </Card>
 
-          {/* FORMULÁRIO - FILTRO AUTOMÁTICO (SEM CAIXINHA VISÍVEL) */}
+          {/* FORMULÁRIO DE INSCRIÇÃO */}
           {showForm && (
             <Card id="formulario-inscricao" className="border-orange-200 bg-orange-50/30">
               <CardHeader>
@@ -697,13 +699,13 @@ function App() {
                   Formulário de Inscrição
                 </CardTitle>
                 <CardDescription>
-                  Preencha todos os dados para garantir sua participação
+                  Preencha todos os dados para garantir a participação do aluno
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   
-                  {/* BUSCA DE ALUNO (FILTRO AUTOMÁTICO: SÓ TURNO MANHÃ) */}
+                  {/* BUSCA DE ALUNO */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center">
                       <Search className="mr-2 h-5 w-5" />
@@ -738,7 +740,7 @@ function App() {
                                 ✓ Aluno selecionado: {selectedStudent.nome_completo}
                               </span>
                               <span className="text-xs text-green-700">
-                                {selectedStudent.serie} - Turma {selectedStudent.turma} - Turno: {selectedStudent.turno}
+                                {selectedStudent.serie} - Turma {selectedStudent.turma}
                               </span>
                             </div>
                             <Button
@@ -764,7 +766,7 @@ function App() {
                               >
                                 <div className="font-medium text-sm">{student.nome_completo}</div>
                                 <div className="text-xs text-gray-600 mt-1">
-                                  {student.serie} - Turma {student.turma} - {student.turno}
+                                  {student.serie} - Turma {student.turma}
                                 </div>
                               </div>
                             ))}
@@ -787,7 +789,7 @@ function App() {
                         )}
                       </div>
 
-                      {/* Campos desabilitados preenchidos automaticamente */}
+                      {/* Campos preenchidos automaticamente */}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="studentGrade">Série do Aluno *</Label>
@@ -892,75 +894,6 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Quantidade de Ingressos */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Users className="mr-2 h-5 w-5" />
-                      Quantidade de Ingressos
-                    </h3>
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                      <p className="text-sm text-blue-800 mb-3">
-                        Cada ingresso custa R$ 30,00.
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <Label className="text-sm font-medium">Quantidade de ingressos:</Label>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={decreaseTickets}
-                              disabled={ticketQuantity === 1}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-8 text-center font-semibold text-lg">
-                              {ticketQuantity}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={increaseTickets}
-                              disabled={ticketQuantity === 20}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <div className="text-sm">
-                          <span className="text-gray-600">Subtotal: </span>
-                          <span className="text-green-600 font-bold text-lg">
-                            R$ {(30 * ticketQuantity).toFixed(2).replace('.', ',')}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {ticketQuantity >= 3 && ticketQuantity < 6 && (
-                        <div className="mt-3 p-2 bg-green-100 rounded border border-green-300">
-                          <p className="text-xs text-green-800 font-medium flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Para 3 ou mais ingressos você pode parcelar em até 2x no cartão!
-                          </p>
-                        </div>
-                      )}
-
-                      {ticketQuantity >= 6 && (
-                        <div className="mt-3 p-2 bg-blue-100 rounded border border-blue-300">
-                          <p className="text-xs text-blue-800 font-medium flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            🎉 Para 6 ou mais ingressos você pode parcelar em até 3x no cartão!
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Método de Pagamento */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Método de Pagamento*</h3>
@@ -985,7 +918,7 @@ function App() {
                           <div className="flex items-center space-x-2">
                             <span className="text-lg font-bold">PIX</span>
                             <span className="text-sm">
-                              R$ {(30 * ticketQuantity).toFixed(2).replace('.', ',')} (sem taxas)
+                              R$ 80,00 (sem taxas)
                             </span>
                           </div>
                         </div>
@@ -1012,16 +945,9 @@ function App() {
                               <span className="text-sm">💳</span>
                               <span className="text-sm font-medium">Cartão de Crédito</span>
                             </div>
-                            {ticketQuantity >= 3 && ticketQuantity < 6 && (
-                              <div className="text-xs text-green-600 ml-6 font-medium">
-                                ✓ Parcele em até 2x sem juros
-                              </div>
-                            )}
-                            {ticketQuantity >= 6 && (
-                              <div className="text-xs text-blue-600 ml-6 font-medium">
-                                ✓ Parcele em até 3x sem juros
-                              </div>
-                            )}
+                            <div className="text-xs text-green-600 ml-6 font-medium">
+                              Parcele em até 3x (com juros)
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1035,24 +961,13 @@ function App() {
                           onChange={(e) => setFormData(prev => ({ ...prev, installments: parseInt(e.target.value) }))}
                           className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm mt-2"
                         >
-                          <option value={1}>1x de R$ {(valorTotal / 1).toFixed(2).replace('.', ',')}</option>
-                          {ticketQuantity >= 3 && (
-                            <option value={2}>2x de R$ {(valorTotal / 2).toFixed(2).replace('.', ',')}</option>
-                          )}
-                          {ticketQuantity >= 6 && (
-                            <option value={3}>3x de R$ {(valorTotal / 3).toFixed(2).replace('.', ',')}</option>
-                          )}
+                          <option value={1}>1x de R$ {valorTotal.toFixed(2).replace('.', ',')}</option>
+                          <option value={2}>2x de R$ {(valorTotal / 2).toFixed(2).replace('.', ',')}</option>
+                          <option value={3}>3x de R$ {(valorTotal / 3).toFixed(2).replace('.', ',')}</option>
                         </select>
-                        {ticketQuantity < 3 && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            * Parcelamento disponível apenas para 3 ou mais ingressos
-                          </p>
-                        )}
-                        {ticketQuantity >= 3 && ticketQuantity < 6 && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            * Parcelamento em 3x disponível para 6 ou mais ingressos
-                          </p>
-                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          * Taxas de cartão aplicadas ao valor total
+                        </p>
                       </div>
                     )}
 
@@ -1061,7 +976,7 @@ function App() {
                       <div className="text-center">
                         <h4 className="text-lg font-bold text-orange-800 mb-1">Valor Total</h4>
                         <div className="text-sm text-gray-600 mb-1">
-                          {ticketQuantity} ingresso{ticketQuantity > 1 ? 's' : ''} × R$ 30,00
+                          1 aluno × R$ 80,00
                         </div>
                         <div className="text-2xl font-bold text-orange-900">
                           R$ {valorTotal.toFixed(2).replace('.', ',')}
@@ -1069,6 +984,11 @@ function App() {
                         {formData.paymentMethod === 'credit' && formData.installments > 1 && (
                           <div className="text-sm text-orange-700 mt-1">
                             {formData.installments}x de R$ {valorParcela.toFixed(2).replace('.', ',')}
+                          </div>
+                        )}
+                        {formData.paymentMethod === 'credit' && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            (inclui taxas do cartão)
                           </div>
                         )}
                       </div>
@@ -1141,10 +1061,10 @@ function App() {
       <footer className="bg-blue-900 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm">
-            © 2025 Escola Centro Educacional Amadeus. Todos os direitos reservados.
+            © 2026 Escola Centro Educacional Amadeus. Todos os direitos reservados.
           </p>
           <p className="text-xs mt-2 opacity-80">
-            Auto de Natal - Teatro Poti Cavalcanti - 6 de Dezembro de 2025
+            O Sítio do Picapau Amarelo - Teatro Alberto Maranhão - 17 de Março de 2026
           </p>
         </div>
       </footer>
@@ -1153,7 +1073,6 @@ function App() {
 }
 
 export default App;
-
 
 
 
