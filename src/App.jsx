@@ -580,7 +580,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>, garrafinha de água e lanche. 
+                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>, <strong>garrafinha de água</strong> e <strong>lanche</strong>. 
                   </p>
                 </div>
               </div>
@@ -1074,6 +1074,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
