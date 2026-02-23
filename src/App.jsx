@@ -508,6 +508,8 @@ function App() {
               <CardContent>
                 <p className="text-sm text-center">
                   Saída da escola às 13h
+                </p>
+                 <p className="text-sm text-center">
                   Retorna à escola às 17h
                 </p>
                 <p className="text-sm text-center font-semibold text-red-600 mt-2">
@@ -1075,6 +1077,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
