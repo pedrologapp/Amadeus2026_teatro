@@ -580,15 +580,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                <div>
-                  <p className="text-sm">
-                    O aluno deverá trazer <strong>GARRAFINHA COM ÁGUA</strong> e o <strong>LANCHE</strong>.
+                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>, garrafinha de água e lanche. 
                   </p>
                 </div>
               </div>
@@ -651,7 +643,7 @@ function App() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
-                      Pagamento obrigatório até 12/03/2026
+                      Pagamento obrigatório até 12 de março de 2026
                     </li>
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
@@ -1082,6 +1074,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
