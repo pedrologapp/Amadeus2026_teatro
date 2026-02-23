@@ -661,6 +661,10 @@ function App() {
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
                       Parcelamento em até 3x no cartão (com juros)
                     </li>
+                    <li className="flex items-start">
+                      <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
+                      Após o pagamento, não será  permitido o reembolso. 
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -1078,6 +1082,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
