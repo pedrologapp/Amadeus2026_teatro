@@ -508,6 +508,8 @@ function App() {
               <CardContent>
                 <p className="text-sm text-center" translate="no">
                   Saída da escola às 13h
+                </p>
+               <p className="text-sm text-center" translate="no">
                   Retorna à escola às 17h
                 </p>
                 <p className="text-sm text-center font-semibold text-red-600 mt-2">
@@ -581,7 +583,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>, <strong>garrafinha de água</strong> e <strong>lanche</strong>. 
+                    O aluno deverá vir com o <strong>FARDAMENTO COMPLETO</strong>, <strong>GARRAFINHA DE ÁGUA</strong> e <strong>LANCHE</strong>. 
                   </p>
                 </div>
               </div>
@@ -1075,6 +1077,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
