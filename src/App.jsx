@@ -433,7 +433,7 @@ function App() {
           <div className="mt-12 flex justify-center items-center space-x-8 text-sm">
             <div className="flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
-              17 de Março de 2026 (Terça-feira)
+              <span translate="no">17 de Março de 2026 (Terça-feira)</span>
             </div>
             <div className="flex items-center">
               <MapPin className="h-5 w-5 mr-2" />
@@ -503,13 +503,11 @@ function App() {
                   <Clock className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle>Data e Horário</CardTitle>
-                <CardDescription>17 de Março de 2026</CardDescription>
+                <CardDescription translate="no">17 de Março de 2026</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-center">
+                <p className="text-sm text-center" translate="no">
                   Saída da escola às 13h
-                </p>
-                 <p className="text-sm text-center">
                   Retorna à escola às 17h
                 </p>
                 <p className="text-sm text-center font-semibold text-red-600 mt-2">
@@ -575,7 +573,7 @@ function App() {
                 <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
                 <div>
                   <p className="text-sm">
-                    Neste dia (17/03) <strong>NÃO HAVERÁ AULA</strong>. Todos os alunos (matutino e vespertino) deverão estar na escola às 13 horas.
+                    Neste dia (<span translate="no">17/03</span>) <strong>NÃO HAVERÁ AULA</strong>. Todos os alunos (matutino e vespertino) deverão estar na escola às <span translate="no">13 horas</span>.
                   </p>
                 </div>
               </div>
@@ -598,7 +596,7 @@ function App() {
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
                 <div>
-                  <p className="text-sm text-red-700 font-semibold">
+                  <p className="text-sm text-red-700 font-semibold" translate="no">
                     Pagamento obrigatório até 12/03/2026. Após essa data não será possível estender o prazo.
                   </p>
                 </div>
@@ -619,7 +617,7 @@ function App() {
 
           <Card className="mb-8">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl text-primary">R$ 80,00</CardTitle>
+              <CardTitle className="text-3xl text-primary" translate="no">R$ 80,00</CardTitle>
               <CardDescription>por ALUNO</CardDescription>
             </CardHeader>
             <CardContent>
@@ -646,7 +644,7 @@ function App() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
-                      Pagamento obrigatório até 12 de março de 2026
+                      <span translate="no">Pagamento obrigatório até 12 de março de 2026</span>
                     </li>
                     <li className="flex items-start">
                       <Shield className="h-4 w-4 text-destructive mr-2 mt-0.5" />
@@ -921,7 +919,7 @@ function App() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className="text-lg font-bold">PIX</span>
-                            <span className="text-sm">
+                            <span className="text-sm" translate="no">
                               R$ 80,00 (sem taxas)
                             </span>
                           </div>
@@ -977,7 +975,7 @@ function App() {
 
                     {/* Valor Total */}
                     <div className="bg-orange-100 p-4 rounded-lg border border-orange-200">
-                      <div className="text-center">
+                      <div className="text-center" translate="no">
                         <h4 className="text-lg font-bold text-orange-800 mb-1">Valor Total</h4>
                         <div className="text-sm text-gray-600 mb-1">
                           1 aluno × R$ 80,00
@@ -1046,9 +1044,9 @@ function App() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-lg font-semibold">(84) 9 8145-0229</p>
+                <p className="text-lg font-semibold" translate="no">(84) 9 8145-0229</p>
                 <p className="text-sm text-muted-foreground">
-                  Horário de atendimento: 7h às 19h
+                  Horário de atendimento: <span translate="no">7h às 19h</span>
                 </p>
               </CardContent>
             </Card>
@@ -1067,7 +1065,7 @@ function App() {
           <p className="text-sm">
             © 2026 Escola Centro Educacional Amadeus. Todos os direitos reservados.
           </p>
-          <p className="text-xs mt-2 opacity-80">
+          <p className="text-xs mt-2 opacity-80" translate="no">
             O Sítio do Picapau Amarelo - Teatro Alberto Maranhão - 17 de Março de 2026
           </p>
         </div>
