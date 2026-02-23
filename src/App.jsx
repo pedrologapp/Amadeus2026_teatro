@@ -507,7 +507,8 @@ function App() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-center">
-                  Chegada na escola: 13:00
+                  Saída da escola às 13h
+                  Retorna à escola às 17h
                 </p>
                 <p className="text-sm text-center font-semibold text-red-600 mt-2">
                   Neste dia NÃO HAVERÁ AULA
@@ -1074,6 +1075,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
